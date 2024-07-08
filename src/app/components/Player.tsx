@@ -2,6 +2,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import Image from 'next/image';
 import Script from 'next/script';
 import { useEffect, useState } from 'react';
 
@@ -17,7 +18,7 @@ globalThis.onSpotifyIframeApiReady = (IFrameAPI) => {
   IFrameAPI.createController(element, {}, callback);
 };
 
-export function Player({ profileId }: { profileId: string }) {
+export function Player({ profileId, playMusic }: { profileId: string; playMusic?: boolean }) {
   const { data: playlists } = useQuery({
     queryKey: ['playlists'],
     queryFn: () => fetchPlaylists(profileId),
@@ -27,9 +28,7 @@ export function Player({ profileId }: { profileId: string }) {
   useEffect(() => {
     if (playlists?.items.length) {
       const interval = setInterval(() => {
-        console.log('EmbedController');
         if (EmbedController) {
-          console.log('load');
           EmbedController?.loadUri(`spotify:playlist:${playlists.items[0].id}`);
           setSelectedPlaylist(playlists.items[0].id);
           clearInterval(interval);
@@ -38,35 +37,40 @@ export function Player({ profileId }: { profileId: string }) {
     }
   }, [playlists]);
 
+  useEffect(() => {
+    if (playMusic !== undefined && selectedPlaylist) {
+      if (playMusic) {
+        EmbedController?.play();
+      } else {
+        EmbedController?.pause();
+      }
+    }
+  }, [playMusic, selectedPlaylist]);
+
   return (
     <>
       {playlists && (
-        <section id="playlists">
-          <h2>Playlists</h2>
-          <button
-            onClick={() => {
-              if (selectedPlaylist) {
-                EmbedController.play();
-              }
-            }}
-          >
-            Play/Pause
-          </button>
-          <ul className="pl-10">
-            {playlists.items.length === 0 && <li>No playlists found</li>}
-            {playlists.items.map((playlist: any) => (
-              <li key={playlist.id} className="list-disc">
-                <button
-                  onClick={() => {
-                    setSelectedPlaylist(playlist.id);
-                    EmbedController?.loadUri(`spotify:playlist:${playlist.id}`);
-                  }}
-                >
-                  {playlist.name}
-                </button>
-              </li>
-            ))}
-          </ul>
+        <section className="container mx-auto">
+          <h2 className="text-3xl font-bold">Playlists</h2>
+          <div className="max-h-[300px] overflow-scroll">
+            <ul className="space-y-3 p-10">
+              {playlists.items.length === 0 && <li>No playlists found</li>}
+              {playlists.items.map((playlist) => (
+                <li key={playlist.id} className="">
+                  <button
+                    onClick={() => {
+                      setSelectedPlaylist(playlist.id);
+                      EmbedController?.loadUri(`spotify:playlist:${playlist.id}`);
+                    }}
+                    className="flex gap-3"
+                  >
+                    <Image src={playlist.images[0].url} width={50} height={50} alt="Album cover" />
+                    {playlist.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </section>
       )}
       <Script src="https://open.spotify.com/embed/iframe-api/v1" async />

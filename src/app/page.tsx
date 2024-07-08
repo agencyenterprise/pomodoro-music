@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 
 import { fetchProfile, getAccessToken, loginSpotify } from '@/services/spotify';
 
+import Countdown from './components/Countdown';
 import { Player } from './components/Player';
 
 const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
@@ -13,6 +14,7 @@ const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
 export default function Home() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [playMusic, setPlayMusic] = useState<boolean | undefined>(undefined);
   const [accessToken, setAccessToken] = useState<string>('');
   const { mutate: spotifyLoginMutation } = useMutation({
     mutationFn: loginSpotify,
@@ -42,10 +44,17 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="flex flex-col gap-10 p-24">
-      <button onClick={() => spotifyLoginMutation()}>Login with spotify</button>
-      <h1>Display your Spotify profile data</h1>
-      {profile && <Player profileId={profile.id} />}
+    <main className="flex flex-col gap-10">
+      <Countdown setPlayMusic={setPlayMusic} />
+      {!accessToken && (
+        <button
+          className="mx-auto block w-fit rounded-full bg-green-500 px-8 py-2 text-green-100"
+          onClick={() => spotifyLoginMutation()}
+        >
+          Login with spotify
+        </button>
+      )}
+      {profile && <Player profileId={profile.id} playMusic={playMusic} />}
     </main>
   );
 }
