@@ -1,5 +1,5 @@
 import debounce from 'lodash.debounce';
-import { useRef, useState } from 'react';
+import { RefObject, useRef, useState } from 'react';
 import ReactCountdown from 'react-countdown';
 
 const DEFAULT_TIME = 1_500_000;
@@ -30,19 +30,23 @@ export default function Countdown({ setPlayMusic }: { setPlayMusic: (value: bool
     }
   };
 
-  const setIntervalTimer = (value, setFn) => {
-    if (!focusTimeRef.current) return;
+  const setIntervalTimer = (
+    inputRef: RefObject<HTMLInputElement>,
+    fromState: 'focus' | 'pause',
+  ) => {
+    if (!inputRef.current) return;
 
-    // if (value < 1) {
-    //   value = 1;
-    //   focusTimeRef.current.value = '1';
-    // }
-    // if (value > 60) {
-    //   value = 60;
-    //   focusTimeRef.current.value = '60';
-    // }
-    setFn(value);
-    setDate(Date.now() + value * 60_000);
+    let value = parseInt(inputRef.current?.value ?? '0', 10);
+    if (value < 1) {
+      value = 1;
+    }
+    if (value > 60) {
+      value = 60;
+    }
+    fromState === 'focus' ? setFocusInterval(value) : setPauseInterval(value);
+    if (state === fromState) {
+      setDate(Date.now() + value * 60_000);
+    }
   };
 
   return (
@@ -77,8 +81,7 @@ export default function Countdown({ setPlayMusic }: { setPlayMusic: (value: bool
             className="w-14 rounded-md border border-gray-300 bg-white p-2 text-base text-gray-600"
             defaultValue={focusInterval}
             onChange={debounce(() => {
-              console.log('focusTimeRef', focusTimeRef.current?.value);
-              setIntervalTimer(focusTimeRef.current?.value, setFocusInterval);
+              setIntervalTimer(focusTimeRef, 'focus');
             }, 300)}
           />{' '}
           minutes and stops{' '}
@@ -88,8 +91,7 @@ export default function Countdown({ setPlayMusic }: { setPlayMusic: (value: bool
             className="w-14 rounded-md border border-gray-300 bg-white p-2 text-base text-gray-600"
             defaultValue={pauseInterval}
             onChange={debounce(() => {
-              console.log('pauseTimeRef', pauseTimeRef.current?.value);
-              setIntervalTimer(pauseTimeRef.current?.value, setPauseInterval);
+              setIntervalTimer(pauseTimeRef, 'pause');
             }, 300)}
           />{' '}
           minutes so you can take a break.
