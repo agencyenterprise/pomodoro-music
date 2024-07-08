@@ -40,7 +40,7 @@ export function Player({ profileId, playMusic }: { profileId: string; playMusic?
   useEffect(() => {
     if (playMusic !== undefined && selectedPlaylist) {
       if (playMusic) {
-        EmbedController?.play();
+        EmbedController?.resume();
       } else {
         EmbedController?.pause();
       }
