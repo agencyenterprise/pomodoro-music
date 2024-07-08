@@ -43,15 +43,6 @@ export default function RootLayout({
         <meta property="twitter:image" content="https://focusreminder.com/og.png" />
 
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-R63J68BLKW" />
-        <script jsx="true">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', 'G-R63J68BLKW');
-          `}
-        </script>
       </Head>
       <Providers>
         <body className={inter.className}>
